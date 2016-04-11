@@ -179,7 +179,7 @@ let () =
                        (Environment.tokens_finder env0)
                        (Environment.algs_finder env0)) e [] in
                 let cc_preenv', e'' = Eval.compile_modifications_no_track
-                    contact_map cc_preenv e' in
+                    contact_map cc_preenv [||] (* TODO *) e' in
                 let cc_env',graph' =
                   if cc_preenv == cc_preenv' then (cc_env,graph)
                   else

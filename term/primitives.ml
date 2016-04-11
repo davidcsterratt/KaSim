@@ -96,6 +96,7 @@ type elementary_rule = {
   injected_tokens : (Alg_expr.t Location.annot * int) list;
   syntactic_rule : int;
   (** [0] means generated for perturbation. *)
+  blacklist : Connected_component.t list;
   instantiations : Instantiation.abstract Instantiation.event;
 }
 
@@ -177,6 +178,7 @@ let map_expr_rule f x = {
   consumed_tokens = List.map (fun (x,t) -> (f x,t)) x.consumed_tokens;
   injected_tokens = List.map (fun (x,t) -> (f x,t)) x.injected_tokens;
   syntactic_rule = x.syntactic_rule;
+  blacklist = x.blacklist;
   instantiations = x.instantiations;
 }
 

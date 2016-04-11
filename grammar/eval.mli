@@ -14,6 +14,7 @@ val compile_bool:
 
 val compile_modifications_no_track:
   Primitives.contact_map -> Connected_component.PreEnv.t ->
+  Connected_component.t list array ->
   (LKappa.rule_mixture, int) Ast.modif_expr list ->
   Connected_component.PreEnv.t * Primitives.modification list
 
