@@ -69,7 +69,8 @@ let initialize ~bind ~return env domain counter graph0 state0 init_l =
                              counter s (Trace.INIT creations_sort)
                              compiled_rule with
                      | Rule_interpreter.Success (_,s) -> s
-                     | (Rule_interpreter.Clash | Rule_interpreter.Corrected) ->
+                     | (Rule_interpreter.Clash | Rule_interpreter.Forbidden _ |
+                        Rule_interpreter.Corrected) ->
                        raise (ExceptionDefn.Internal_Error
                                 ("Bugged initial rule",pos)))
                   state value,state0))) (return (graph0,state0)) init_l in
@@ -82,6 +83,7 @@ let initialize ~bind ~return env domain counter graph0 state0 init_l =
                  ~get_alg:(fun i -> Environment.get_alg env i)
                  (fun x _ y -> Random_tree.add x y state0.activities)
                  env counter graph,state0))
+
 
 let observables_values env counter graph state =
   let get_alg i = get_alg env state i in
@@ -302,6 +304,8 @@ let one_rule ~outputs dt stop env domain counter graph state =
         else Rule_interpreter.adjust_rule_instances
             ~rule_id ~get_alg register_new_activity env counter graph rule),
        state)
+  | Rule_interpreter.Forbidden graph' ->
+    (not (Counter.one_forbidden_instance_event counter dt)||stop,graph',state)
 
 let activity state = Random_tree.total state.activities
 

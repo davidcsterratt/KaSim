@@ -224,7 +224,7 @@ let apply compil rule inj_nodes mix =
                 (inj_nodes,Mods.IntMap.empty)) rule.Primitives.removed in
   let (side_effects,dummy,edges_after_neg) =
     List.fold_left
-      Rule_interpreter.apply_negative_transformation
+      (fun x y -> fst @@ Rule_interpreter.apply_negative_transformation x y)
       ([],Connected_component.Map.empty,mix) concrete_removed in
   let (_,remaining_side_effects,_,edges'),concrete_inserted =
     List.fold_left

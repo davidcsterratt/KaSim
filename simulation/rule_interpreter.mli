@@ -2,7 +2,7 @@
 
 type t (**Abstract graph*)
 
-type result = Clash | Corrected | Success of (int option * t)
+type result = Clash | Corrected | Forbidden of t | Success of (int option * t)
 (** the int option is the distance between patterns in unimolecular
     instances of rule if you've asked for them *)
 
@@ -95,8 +95,9 @@ val apply_negative_transformation :
   (Instantiation.concrete Instantiation.site) list *
   Mods.IntSet.t Mods.IntMap.t Connected_component.Map.t * Edges.t ->
   Instantiation.concrete Primitives.Transformation.t ->
-  (Instantiation.concrete Instantiation.site) list *
-  Mods.IntSet.t Mods.IntMap.t Connected_component.Map.t * Edges.t
+  ((Instantiation.concrete Instantiation.site) list *
+  Mods.IntSet.t Mods.IntMap.t Connected_component.Map.t * Edges.t) *
+  Instantiation.concrete Primitives.Transformation.t
 val apply_positive_transformation :
   Signature.s ->
   (Connected_component.Matching.t * int Mods.IntMap.t) *

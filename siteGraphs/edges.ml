@@ -156,6 +156,34 @@ let copy graph =
        | Some ccs -> Some (Mods.DynArray.copy ccs));
   }
 
+let add_agent_id sigs ty id graph =
+  let ar = Signature.arity sigs ty in
+  let al = Array.make ar None in
+  let ai = Array.make ar None in
+  let () = assert (not graph.outdated) in
+  let () = graph.outdated <- true in
+  match graph.free_id with
+  | new_id,h :: t when h = id ->
+    let missings' = Tools.recti (fun a s -> Mods.Int2Set.add (h,s) a)
+        graph.missings ar in
+    let () = Mods.DynArray.set graph.connect h al in
+    let () = Mods.DynArray.set graph.state h ai in
+    let () = Mods.DynArray.set graph.sort h (Some ty) in
+    let () = match graph.connected_component with
+      | None -> ()
+      | Some ccs -> Mods.DynArray.set ccs h (Some h) in
+    {
+      outdated = false;
+      connect = graph.connect;
+      missings = missings';
+      state = graph.state;
+      sort = graph.sort;
+      cache = graph.cache;
+      free_id = (new_id,t);
+      connected_component = graph.connected_component;
+    }
+  | _,_ -> assert false
+
 let add_agent sigs ty graph =
   let ar = Signature.arity sigs ty in
   let al = Array.make ar None in
@@ -303,17 +331,21 @@ let get_internal ag s graph =
 let remove_internal ag s graph =
   let () = assert (not graph.outdated) in
   let () = graph.outdated <- true in
+  let i = (Mods.DynArray.get graph.state ag).(s) in
   let () = (Mods.DynArray.get graph.state ag).(s) <- None in
-  {
-    outdated = false;
-    connect = graph.connect;
-    missings = graph.missings;
-    state = graph.state;
-    sort = graph.sort;
-    cache = graph.cache;
-    free_id = graph.free_id;
-    connected_component = graph.connected_component;
-  }
+  match i with
+    None -> assert false
+  | Some i ->
+    i, {
+      outdated = false;
+      connect = graph.connect;
+      missings = graph.missings;
+      state = graph.state;
+      sort = graph.sort;
+      cache = graph.cache;
+      free_id = graph.free_id;
+      connected_component = graph.connected_component;
+    }
 
 let remove_link ag s ag' s' graph =
   let () = assert (not graph.outdated) in
