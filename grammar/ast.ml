@@ -100,6 +100,7 @@ type ('mixture,'id) instruction =
   | PLOT     of ('mixture,'id) Alg_expr.e Location.annot
   | PERT     of ('mixture,'id) perturbation
   | CONFIG   of configuration
+  | CONSTRAINT of 'id Location.annot list * 'mixture Location.annot
 
 type ('mixture,'id) command =
   | RUN of ('mixture,'id) Alg_expr.bool_expr
@@ -132,7 +133,9 @@ type ('agent,'mixture,'id,'rule) compil =
     tokens :
       string Location.annot list;
     volumes :
-      (string * float * string) list
+      (string * float * string) list;
+    constraints :
+      ('id Location.annot list * 'mixture Location.annot) list;
   }
 
 let no_more_site_on_right warning left right =
@@ -164,7 +167,8 @@ let empty_compil =
     perturbations  = [];
     configurations = [];
     tokens         = [];
-    volumes        = []
+    volumes        = [];
+    constraints    = [];
   }
 
 (*
@@ -597,10 +601,16 @@ let compil_to_json c =
         (JsonUtil.of_pair
            string_annot_to_json (JsonUtil.of_list string_annot_to_json))
         c.configurations;
+      "constraints",
+      JsonUtil.of_list
+        (JsonUtil.of_pair
+           (JsonUtil.of_list string_annot_to_json)
+           (Location.annot_to_json mix_to_json))
+        c.constraints;
     ]
 
 let compil_of_json = function
-  | `Assoc l as x when List.length l = 8 ->
+  | `Assoc l as x when List.length l = 9 ->
     let mix_of_json = JsonUtil.to_list agent_of_json in
     let var_of_json = JsonUtil.to_string ?error_msg:None in
     begin
@@ -664,6 +674,15 @@ let compil_of_json = function
                  string_annot_of_json (JsonUtil.to_list string_annot_of_json))
               (List.assoc "configurations" l);
           volumes = [];
+          constraints =
+            JsonUtil.to_list ~error_msg:(JsonUtil.build_msg "AST constraints")
+              (JsonUtil.to_pair
+                 (JsonUtil.to_list
+                    ~error_msg:(JsonUtil.build_msg "AST constraints")
+                    string_annot_of_json)
+                 (Location.annot_of_json mix_of_json))
+              (List.assoc "constraints" l);
+
         }
       with Not_found ->
         raise (Yojson.Basic.Util.Type_error ("Incorrect AST",x))

@@ -1048,6 +1048,10 @@ let create_sig l =
   Tools.array_map_of_list
     (fun (name,intf) -> (name,create_t intf)) l
 
+let constraint_of_ast sigs rule_names (rl,(mix,pos)) =
+  (List.map (fun (_,pos as x) -> NamedDecls.elt_id ~kind:"rule" rule_names x,pos) rl,
+   (mixture_of_ast sigs pos mix,pos))
+
 let compil_of_ast overwrite c =
   let c =
     if c.Ast.signatures = [] && c.Ast.tokens = []
@@ -1074,6 +1078,16 @@ let compil_of_ast overwrite c =
   let perts',updated_vars =
     Tools.list_fold_right_map
       (perturbation_of_ast sigs tok algs) c.Ast.perturbations [] in
+  let rule_names =
+    let i = ref (-1) in
+    NamedDecls.create
+      (Tools.array_map_of_list
+         (function
+           | Some label,_,_,_,_,_,_,_ -> label,()
+           | None,_,_,_,_,_,_,_ ->
+             let () = incr i in
+             Location.dummy_annot ("__"^string_of_int !i),())
+         cleaned_rules) in
   sigs,tk_nd,updated_vars,
   {
     Ast.variables =
@@ -1116,4 +1130,6 @@ let compil_of_ast overwrite c =
     Ast.tokens = c.Ast.tokens;
     Ast.signatures = c.Ast.signatures;
     Ast.configurations = c.Ast.configurations;
+    Ast.constraints =
+      List.map (constraint_of_ast sigs rule_names) c.Ast.constraints;
   }
