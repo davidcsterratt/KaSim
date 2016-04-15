@@ -1,0 +1,12 @@
+# Snapshot [Event: 180]
+%init: 14 C(a!1, b), A(b, c!1)
+%init: 23 A(b!1, c), C(a, b!2), B(a!1, c!2)
+%init: 9 B(a!1, c), A(b!1, c)
+%init: 13 C(a, b!1), B(a, c!1)
+%init: 27 C(a!2, b), A(b!1, c!2), B(a!1, c)
+%init: 19 A(b, c!2), C(a!2, b!1), B(a, c!1)
+%init: 2 C(a, b)
+%init: 7 B(a, c)
+%init: 2 A(b!1, c!3), C(a!3, b!2), B(a!1, c!2)
+%init: 6 A(b, c)
+
