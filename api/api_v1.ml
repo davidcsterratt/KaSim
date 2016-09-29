@@ -29,7 +29,6 @@ let catch_error : 'a . (Api_types_v1_j.errors -> 'a) -> exn -> 'a =
     | exn -> handler (Api_data_v1.api_message_errors (Printexc.to_string exn))
   )
 
-
 class type api_runtime =
   object
     method parse :
@@ -447,8 +446,8 @@ end = struct
                  Lwt.return_unit
               else if simulation.is_running then
                  let () = Lwt.async (fun () -> self#log "run.4") in
-                 (let () = lastyield <- Sys.time () in
-                  self#yield ()) >>= iter
+                 (self#yield ()) >>= (fun () ->
+                     let () = lastyield <- Sys.time () in iter ())
               else
                 let () = Lwt.async (fun () -> self#log "run.5") in
                  Lwt.return_unit
