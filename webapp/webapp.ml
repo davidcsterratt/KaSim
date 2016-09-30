@@ -11,6 +11,15 @@ open Unix
 open Lwt_log
 open Re
 
+class system_process min_run_duration : Kappa_facade.system_process =
+object
+  method log ?exn (msg : string) =
+    Lwt_log_core.log ~level:Lwt_log_core.Info ?exn msg
+
+  method yield () : unit Lwt.t = Lwt_main.yield ()
+  inherit Kappa_facade.system_template min_run_duration
+end
+
 let route_handler
     ?(shutdown_key : string option  = None)
     ()
@@ -20,7 +29,8 @@ let route_handler
     Cohttp_lwt_body.t ->
     (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
   =
-  let manager : Api.manager = new Api_runtime.manager in
+  let sytem_process : Kappa_facade.system_process = new system_process 1.0 in
+  let manager : Api.manager = new Api_runtime.manager sytem_process in
   fun (conn : Cohttp_lwt_unix.Server.conn)
     (request : Cohttp.Request.t)
     (body : Cohttp_lwt_body.t)
