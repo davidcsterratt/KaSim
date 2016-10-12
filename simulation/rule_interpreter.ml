@@ -247,45 +247,45 @@ let apply_positive_transformation
       (ExceptionDefn.Internal_Error
          (Location.dummy_annot "NegativeInternalized in positive update"))
 
-let revert_negative_transformation sigs (roots_by_cc,edges) = function
+let revert_negative_transformation sigs edges = function
   | Primitives.Transformation.Agent (id,ty) ->
     let edges' = Edges.add_agent_id sigs ty id edges in
-    roots_by_cc,edges'
+    edges'
   | Primitives.Transformation.Freed ((id,_),s) -> (*(n,s)-bottom*)
     let edges' = Edges.add_free id s edges in
-    roots_by_cc,edges'
+    edges'
   | Primitives.Transformation.Linked ((nc,s),(nc',s')) ->
-    let edges',modif_cc = Edges.add_link nc s nc' s' edges in
-    merge_cc roots_by_cc modif_cc,edges'
+    let edges',_modif_cc = Edges.add_link nc s nc' s' edges in
+    edges'
   | Primitives.Transformation.NegativeWhatEver _ ->
     raise
       (ExceptionDefn.Internal_Error
          (Location.dummy_annot "NegativeWhatEver in negative revert"))
   | Primitives.Transformation.PositiveInternalized ((id,_),s,i) ->
     let edges' = Edges.add_internal id s i edges in
-    roots_by_cc,edges'
+    edges'
   | Primitives.Transformation.NegativeInternalized _ ->
     raise
       (ExceptionDefn.Internal_Error
          (Location.dummy_annot "NegativeInternalized in negative revert"))
 
-let revert_positive_transformation (roots_by_cc,edges) = function
+let revert_positive_transformation edges = function
   | Primitives.Transformation.Agent (id,_) ->
     let edges' = Edges.remove_agent id edges in
-    roots_by_cc,edges'
+    edges'
   | Primitives.Transformation.Freed ((id,_),s) -> (*(n,s)-bottom*)
     let edges' = Edges.remove_free id s edges in
-    roots_by_cc,edges'
+    edges'
   | Primitives.Transformation.Linked (((id,_),s),((id',_),s')) ->
-    let edges',cc_modif = Edges.remove_link id s id' s' edges in
-    break_apart_cc edges' roots_by_cc cc_modif,edges'
+    let edges',_cc_modif = Edges.remove_link id s id' s' edges in
+    edges'
   | Primitives.Transformation.NegativeWhatEver _ ->
     raise
       (ExceptionDefn.Internal_Error
          (Location.dummy_annot "NegativeWhatEver in positive revert"))
   | Primitives.Transformation.PositiveInternalized ((id,_),s,_) ->
     let _,edges' = Edges.remove_internal id s edges in
-    roots_by_cc,edges'
+    edges'
   | Primitives.Transformation.NegativeInternalized _ ->
     raise
       (ExceptionDefn.Internal_Error
@@ -445,18 +445,14 @@ let update_edges
            rule.Primitives.blacklist)
       new_obs
   then
-    let roots_of_up'',edges''' =
+    let edges''' =
       List.fold_left
         (revert_negative_transformation sigs)
         (List.fold_left
-           revert_positive_transformation
-           (roots_of_up',edges'') concrete_inserted')
+           revert_positive_transformation edges'' concrete_inserted')
         concrete_removed' in
     Forbidden
-      { state with
-        edges = edges''';
-        roots_of_unary_patterns = roots_of_up'';
-      }
+      { state with edges = edges'''; }
   else
     Success
       ((if state.store_distances then Tools.option_map List.length path else None),
