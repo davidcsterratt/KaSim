@@ -403,7 +403,9 @@ let perturbation
                 (Environment.algs_finder t.env))
              (KappaParser.effect_list KappaLexer.token lexbuf) [] in
          let cc_preenv', e'' = Eval.compile_modifications_no_track
-             t.contact_map cc_preenv e' in
+             t.contact_map cc_preenv
+             [||](*TODO should be the list of blacklisted*)
+             e' in
          let graph' =
            if cc_preenv == cc_preenv' then t.graph
            else
