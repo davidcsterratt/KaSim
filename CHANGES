@@ -4,7 +4,7 @@ From KaSim 3 to KaSim 4
 - Options '-t' '-e' and '-p' are removed!
 
 You should specify the limit of simulation by '-l' and the plot period
-(how often you want a data line) by the "new" '-p'. These options are
+(how often you want a data point) by the "new" '-p'. These options are
 by default in "simulated time unit" but you can switch to event using
 '-u event'.
 
@@ -47,7 +47,7 @@ $TRACK "pattern" [true]
 It pauses and launches a toplevel in which you can do modification
 (as in perturbations) and then (optionally) continue the simulation.
 
-You can use '-mode batch' to get a Ctrl-c that does kill the simulation
+You can use '-mode batch' to get Ctrl-c to kill the simulation
 (and more generally to get a KaSim that never asks questions) or '-mode
 interactive' to pause the simulation just after the initialization
 phase.
